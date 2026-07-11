@@ -3,13 +3,13 @@
 	"type": "module",
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
-		"build": "tsc && cp static/sam.jpg dist/static/sam.jpg",
+		"build": "tsc && cp --parents static/sam.jpg dist/",
 		"start": "node dist/index.js"
 	},
 	"dependencies": {
 		"@hono/node-server": "^2.0.8",
 		"@resvg/resvg-js": "^2.6.2",
-		"hono": "^4.12.27",
+		"hono": "4.12.28",
 		"ky": "^2.0.2",
 		"winston": "^3.19.0"
 	},
