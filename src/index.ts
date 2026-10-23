@@ -5,7 +5,7 @@ import { Hono } from 'hono';
 import ky from 'ky';
 import winston from 'winston';
 import { logger } from 'hono/logger';
-import { HTTPException } from 'hono/http-exception';
+import sharp from 'sharp';
 
 const winstonLogger = winston.createLogger({
 	level: 'info',
@@ -31,7 +31,7 @@ app.get('/:id{.+__.+\.png}', async (c) => {
 		const buffer = await makeImage(id);
 
 		return c.body(buffer, 200, {
-			'Content-Type': 'image/png',
+			'Content-Type': 'image/jpeg',
 			'Cache-Control': 'public, max-age=2592000, stale-while-revalidate=604800'
 		});
 	} catch (error) {
@@ -51,13 +51,13 @@ async function makeImage(id: string) {
 	const [first, second] = await Promise.all(imagePaths.map(fetchPosterImage));
 
 	const svg = `
-<svg width="1230" height="600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <linearGradient x1="0%" y1="45%" x2="100%" y2="55%" id="b">
       <stop stop-color="#202225" offset="0%"/>
       <stop stop-color="#000000" offset="100%"/>
     </linearGradient>
-    <path id="a" d="M0 0h1230v600H0z"/>
+    <path id="a" d="M0 0h1200v630H0z"/>
     <filter id="blur" width="160%" height="160%" x="-30%" y="-30%">
       <feGaussianBlur in="SourceGraphic" stdDeviation="50" result="blurred" />
       <feColorMatrix type="saturate" values="1.15"/>
@@ -99,9 +99,9 @@ async function makeImage(id: string) {
     </g>
   </g>
 </svg>`;
-	const resvg = new Resvg(svg, {});
-	const pngData = resvg.render();
-	return new Uint8Array(pngData.asPng());
+	const png = new Resvg(svg, {}).render().asPng();
+	const jpeg = await sharp(png).jpeg({ quality: 85, mozjpeg: true }).toBuffer();
+	return jpeg;
 }
 
 async function fetchPosterImage(path: string): Promise<string> {
